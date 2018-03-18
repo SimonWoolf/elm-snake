@@ -53,7 +53,7 @@ type alias Coord = ( Int, Int )
 -}
 type alias Snake = List Coord
 
-type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool }
+type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String }
 
 type Direction
     = Up
@@ -74,6 +74,7 @@ init = ( { snake = [ ( 0, 0 ) ]
       , lastTick = Nothing
       , paused = True
       , gameOver = False
+      , instructions = Just "Press space to start\nwasd/arrows/hjkl to move"
       }
     , newFruitCmd
     )
@@ -83,10 +84,12 @@ init = ( { snake = [ ( 0, 0 ) ]
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = case msg of
-        StartStop -> case model.gameOver of
-                False -> ( { model | paused = not model.paused }, Cmd.none )
+        StartStop -> case ( model.gameOver, model.paused ) of
+                ( False, False ) -> ( { model | paused = True, instructions = Just "Paused\nPress space to unpause" }, Cmd.none )
 
-                True -> ( { model | paused = False, gameOver = False, snake = [ ( 0, 0 ) ] }, newFruitCmd )
+                ( False, True ) -> ( { model | paused = False, instructions = Nothing }, Cmd.none )
+
+                ( True, _ ) -> ( { model | paused = False, gameOver = False, snake = [ ( 0, 0 ) ], instructions = Nothing }, newFruitCmd )
 
         Direction direction -> ( { model | lastDirection = direction }, Cmd.none )
 
@@ -194,7 +197,7 @@ newFruitCmd = Random.generate NewFruitPosition
 checkCollision : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 checkCollision ( model, cmd ) = case model.snake of
         head :: tail -> if List.any (\a -> a == head) tail then
-                ( { model | gameOver = True, paused = True }, Cmd.none )
+                ( { model | gameOver = True, paused = True, instructions = Just "Game over\nSpace to start again" }, Cmd.none )
             else
                 ( model, cmd )
 
@@ -225,8 +228,23 @@ cherry model = Text.fromString "🍒"
         -- get the emoji to visually sit squarely inside a square
         |> move ( -5, 7 )
 
+instructions : Model -> List Collage.Form
+instructions model = case model.instructions of
+        Nothing -> []
+
+        Just str -> [ Text.fromString str
+                |> Text.color Color.white
+                |> Text.height 30
+                |> Element.centered
+                |> Element.width useableGameSize
+                |> Collage.toForm
+                |> move ( 0, toFloat (gameSize // 4) )
+
+            --|> setPosition ()
+            ]
+
 canvas : Model -> Element.Element
-canvas model = Collage.collage gameSize gameSize (background :: (cherry model) :: (snake model))
+canvas model = Collage.collage gameSize gameSize (background :: (cherry model) :: (snake model) ++ (instructions model))
 
 
 -- View
