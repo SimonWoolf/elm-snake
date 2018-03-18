@@ -1,8 +1,8 @@
 module Main exposing (..)
 
-import Html exposing (Html, Attribute, button, div, text, h2)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Styled as Html exposing (Html, Attribute, button, div, text, h1)
+import Html.Styled.Attributes exposing (css)
+import Html.Styled.Events exposing (onClick, onInput)
 import Keyboard exposing (KeyCode)
 import Char
 import Time
@@ -11,6 +11,7 @@ import Element
 import Text
 import Color exposing (black, rgb)
 import Random
+import Css exposing (margin, px)
 
 main = Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
 
@@ -280,8 +281,7 @@ canvas model = Collage.collage gameSize gameSize (background :: (cherry model) :
 -- View
 
 view : Model -> Html Msg
-view model = Html.body []
-        [ h2 [] [ text "snake" ]
-        , div [] [ text (toString model) ]
-        , div [] [ Element.toHtml (canvas model) ]
+view model = Html.body [ css [ margin (px 50) ] ]
+        [ h1 [] [ text "Snake" ]
+        , div [] [ Element.toHtml (canvas model) |> Html.fromUnstyled ]
         ]
