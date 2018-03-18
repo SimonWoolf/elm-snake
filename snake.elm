@@ -8,7 +8,9 @@ import Char
 import Time
 import Collage exposing (filled, square, move)
 import Element
+import Text
 import Color exposing (black, rgb)
+import Random
 
 main = Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
 
@@ -51,7 +53,7 @@ type alias Coord = ( Int, Int )
 -}
 type alias Snake = List Coord
 
-type alias Model = { snake : Snake, fruit : Maybe Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool }
+type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool }
 
 type Direction
     = Up
@@ -63,10 +65,11 @@ type Msg
     = Direction Direction
     | StartStop
     | Tick Time.Time
+    | NewFruitPosition Coord
 
 init : ( Model, Cmd Msg )
 init = ( { snake = [ ( 1, 1 ), ( 2, 2 ), ( 3, 3 ), ( 10, 10 ) ]
-      , fruit = Nothing
+      , fruit = ( 0, 0 )
       , lastDirection = Right
       , lastTick = Nothing
       , paused = True
@@ -83,7 +86,9 @@ update msg model = case msg of
 
         Direction direction -> ( { model | lastDirection = direction }, Cmd.none )
 
-        Tick time -> ( onTick model, Cmd.none )
+        Tick time -> onTick model
+
+        NewFruitPosition coord -> ( { model | fruit = coord }, Cmd.none )
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.batch
@@ -133,13 +138,13 @@ parseKeyCode code = -- todo make it a maybe input, so can ignore if not recognis
 
             ( _, other ) -> Direction Up
 
-onTick : Model -> Model
+onTick : Model -> ( Model, Cmd Msg )
 onTick model = case model.paused of
-        True -> model
+        True -> ( model, Cmd.none )
 
         False -> advanceSnake model
 
-advanceSnake : Model -> Model
+advanceSnake : Model -> ( Model, Cmd Msg )
 advanceSnake model = model
         |> extendHead
         |> retractTailUnlessFruit
@@ -170,33 +175,49 @@ wrap ( x, y ) = if abs x > maxCoord then
     else
         ( x, y )
 
-retractTailUnlessFruit : Model -> Model
-retractTailUnlessFruit model = if (List.head model.snake) == model.fruit then
-        { model | fruit = Nothing }
+retractTailUnlessFruit : Model -> ( Model, Cmd Msg )
+retractTailUnlessFruit model = if (List.head model.snake) == Just model.fruit then
+        ( model, newFruitCmd )
     else
-        { model | snake = (dropLast model.snake) }
+        ( { model | snake = (dropLast model.snake) }, Cmd.none )
 
 dropLast : List a -> List a
 dropLast list = list |> List.reverse |> List.drop 1 |> List.reverse
 
+newFruitCmd : Cmd Msg
+newFruitCmd = Random.generate NewFruitPosition
+        (Random.pair
+            (Random.int -maxCoord maxCoord)
+            (Random.int -maxCoord maxCoord)
+        )
+
 
 -- Graphics
 
-background : List Collage.Form
-background = [ filled black (square (toFloat gameSize)) ]
+background : Collage.Form
+background = filled black (square (toFloat gameSize))
 
-setSnakePartPosition : Int -> Int -> Collage.Form -> Collage.Form
-setSnakePartPosition x y = move ( (toFloat x) * snakePartSize, (toFloat y) * snakePartSize )
+setPosition : Coord -> Collage.Form -> Collage.Form
+setPosition ( x, y ) = move ( (toFloat x) * snakePartSize, (toFloat y) * snakePartSize )
 
 snakePart : ( Int, Int ) -> Collage.Form
-snakePart ( x, y ) = filled yellow (square snakePartVisibleSize)
-        |> setSnakePartPosition x y
+snakePart coord = filled yellow (square snakePartVisibleSize)
+        |> setPosition coord
 
 snake : Model -> List Collage.Form
 snake model = List.map snakePart model.snake
 
+cherry : Model -> Collage.Form
+cherry model = Text.fromString "🍒"
+        |> Text.color Color.white
+        |> Element.leftAligned
+        |> Collage.toForm
+        |> setPosition model.fruit
+        -- get the emoji to visually sit squarely inside a square
+        |> move ( -5, 7 )
+
 canvas : Model -> Element.Element
-canvas model = Collage.collage gameSize gameSize (background ++ (snake model))
+canvas model = Collage.collage gameSize gameSize (background :: (cherry model) :: (snake model))
 
 
 -- View
