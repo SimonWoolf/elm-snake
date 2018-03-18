@@ -44,6 +44,19 @@ snakePartVisibleSize = snakePartSize - 2
 yellow : Color.Color
 yellow = Color.rgb 249 161 30
 
+{-| Point of having little and big ticks is so we can respond immediately when
+a button is pressed, to feel responsive, but still wait ~bigTickMs before the
+move after that
+-}
+bigTickMilliseconds : Int
+bigTickMilliseconds = 250
+
+littleTickMilliseconds : Int
+littleTickMilliseconds = 10
+
+littleTicksPerBigTick : Int
+littleTicksPerBigTick = bigTickMilliseconds // littleTickMilliseconds
+
 
 -- Types & model
 
@@ -53,7 +66,7 @@ type alias Coord = ( Int, Int )
 -}
 type alias Snake = List Coord
 
-type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String }
+type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String, littleTickCounter : Int }
 
 type Direction
     = Up
@@ -64,7 +77,7 @@ type Direction
 type Msg
     = Direction Direction
     | StartStop
-    | Tick Time.Time
+    | LittleTick Time.Time
     | NewFruitPosition Coord
 
 init : ( Model, Cmd Msg )
@@ -75,6 +88,7 @@ init = ( { snake = [ ( 0, 0 ) ]
       , paused = True
       , gameOver = False
       , instructions = Just "Press space to start\nwasd/arrows/hjkl to move"
+      , littleTickCounter = 0
       }
     , newFruitCmd
     )
@@ -94,16 +108,19 @@ update msg model = case msg of
         Direction direction -> if (doublingBack model.snake direction) then
                 ( model, Cmd.none )
             else
-                ( { model | lastDirection = direction }, Cmd.none )
+                onTick { model | littleTickCounter = 0, lastDirection = direction }
 
-        Tick time -> onTick model
+        LittleTick time -> if model.littleTickCounter == littleTicksPerBigTick then
+                onTick { model | littleTickCounter = 0 }
+            else
+                ( { model | littleTickCounter = model.littleTickCounter + 1 }, Cmd.none )
 
         NewFruitPosition coord -> ( { model | fruit = coord }, Cmd.none )
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.batch
         [ Keyboard.downs parseKeyCode
-        , Time.every (250 * Time.millisecond) Tick
+        , Time.every (10 * Time.millisecond) LittleTick
         ]
 
 parseKeyCode : KeyCode -> Msg

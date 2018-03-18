@@ -12176,6 +12176,9 @@ var _user$project$Main$doublingBack = F2(
 			return false;
 		}
 	});
+var _user$project$Main$littleTickMilliseconds = 10;
+var _user$project$Main$bigTickMilliseconds = 250;
+var _user$project$Main$littleTicksPerBigTick = (_user$project$Main$bigTickMilliseconds / _user$project$Main$littleTickMilliseconds) | 0;
 var _user$project$Main$yellow = A3(_elm_lang$core$Color$rgb, 249, 161, 30);
 var _user$project$Main$useableGameSize = 480;
 var _user$project$Main$gameSize = 500;
@@ -12368,9 +12371,9 @@ var _user$project$Main$view = function (model) {
 			}
 		});
 };
-var _user$project$Main$Model = F7(
-	function (a, b, c, d, e, f, g) {
-		return {snake: a, fruit: b, lastDirection: c, lastTick: d, paused: e, gameOver: f, instructions: g};
+var _user$project$Main$Model = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {snake: a, fruit: b, lastDirection: c, lastTick: d, paused: e, gameOver: f, instructions: g, littleTickCounter: h};
 	});
 var _user$project$Main$Right = {ctor: 'Right'};
 var _user$project$Main$Left = {ctor: 'Left'};
@@ -12399,7 +12402,8 @@ var _user$project$Main$init = {
 		lastTick: _elm_lang$core$Maybe$Nothing,
 		paused: true,
 		gameOver: false,
-		instructions: _elm_lang$core$Maybe$Just('Press space to start\nwasd/arrows/hjkl to move')
+		instructions: _elm_lang$core$Maybe$Just('Press space to start\nwasd/arrows/hjkl to move'),
+		littleTickCounter: 0
 	},
 	_1: _user$project$Main$newFruitCmd
 };
@@ -12476,15 +12480,21 @@ var _user$project$Main$update = F2(
 				}
 			case 'Direction':
 				var _p23 = _p21._0;
-				return A2(_user$project$Main$doublingBack, model.snake, _p23) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
+				return A2(_user$project$Main$doublingBack, model.snake, _p23) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : _user$project$Main$onTick(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{littleTickCounter: 0, lastDirection: _p23}));
+			case 'LittleTick':
+				return _elm_lang$core$Native_Utils.eq(model.littleTickCounter, _user$project$Main$littleTicksPerBigTick) ? _user$project$Main$onTick(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{littleTickCounter: 0})) : {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{lastDirection: _p23}),
+						{littleTickCounter: model.littleTickCounter + 1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			case 'Tick':
-				return _user$project$Main$onTick(model);
 			default:
 				return {
 					ctor: '_Tuple2',
@@ -12495,8 +12505,8 @@ var _user$project$Main$update = F2(
 				};
 		}
 	});
-var _user$project$Main$Tick = function (a) {
-	return {ctor: 'Tick', _0: a};
+var _user$project$Main$LittleTick = function (a) {
+	return {ctor: 'LittleTick', _0: a};
 };
 var _user$project$Main$StartStop = {ctor: 'StartStop'};
 var _user$project$Main$Direction = function (a) {
@@ -12611,7 +12621,7 @@ var _user$project$Main$subscriptions = function (model) {
 			_0: _elm_lang$keyboard$Keyboard$downs(_user$project$Main$parseKeyCode),
 			_1: {
 				ctor: '::',
-				_0: A2(_elm_lang$core$Time$every, 250 * _elm_lang$core$Time$millisecond, _user$project$Main$Tick),
+				_0: A2(_elm_lang$core$Time$every, 10 * _elm_lang$core$Time$millisecond, _user$project$Main$LittleTick),
 				_1: {ctor: '[]'}
 			}
 		});
