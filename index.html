@@ -5,11 +5,17 @@
   <title>Snake</title>
 </head>
 <body>
-  <div id="main"></div>
   <script type="text/javascript" src="main.js"></script>
   <script type="text/javascript">
-  var node = document.getElementById('main');
-  var app = Elm.Main.embed(node);
+  var app = Elm.Main.fullscreen();
+  /*
+     Send messages as: app.ports.rawInput.send(message)
+     valid messages: "startstop", "up", "down", "left", "right"
+   */
+  app.ports.event.subscribe(function(event) {
+    /* possible events are "newcherry" and "gameover" */
+    console.log(event)
+  });
   </script>
 </body>
 </html>

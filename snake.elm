@@ -1,4 +1,4 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Html.Styled as Html exposing (Html, Attribute, button, div, text, h1)
 import Html.Styled.Attributes exposing (css)
@@ -77,6 +77,7 @@ type Direction
 
 type Msg
     = Direction Direction
+    | RawDirection String
     | StartStop
     | LittleTick Time.Time
     | NewFruitPosition Coord
@@ -97,6 +98,10 @@ init = ( { snake = [ ( 0, 0 ) ]
 
 -- Updates and subscriptions
 
+port rawInput : (String -> msg) -> Sub msg
+
+port event : String -> Cmd msg
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = case msg of
         StartStop -> case ( model.gameOver, model.paused ) of
@@ -111,6 +116,8 @@ update msg model = case msg of
             else
                 onTick { model | littleTickCounter = 0, lastDirection = direction }
 
+        RawDirection string -> updateRaw string model
+
         LittleTick time -> if model.littleTickCounter == littleTicksPerBigTick then
                 onTick { model | littleTickCounter = 0 }
             else
@@ -118,10 +125,31 @@ update msg model = case msg of
 
         NewFruitPosition coord -> ( { model | fruit = coord }, Cmd.none )
 
+updateRaw : String -> Model -> ( Model, Cmd Msg )
+updateRaw str model = let
+        maybeMsg = case str of
+                "up" -> Just (Direction Up)
+
+                "down" -> Just (Direction Down)
+
+                "left" -> Just (Direction Left)
+
+                "right" -> Just (Direction Right)
+
+                "startstop" -> Just StartStop
+
+                _ -> Nothing
+    in
+        case maybeMsg of
+            Just msg -> update msg model
+
+            Nothing -> ( model, Cmd.none )
+
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.batch
         [ Keyboard.downs parseKeyCode
         , Time.every (10 * Time.millisecond) LittleTick
+        , rawInput RawDirection
         ]
 
 parseKeyCode : KeyCode -> Msg
@@ -219,16 +247,19 @@ dropLast : List a -> List a
 dropLast list = list |> List.reverse |> List.drop 1 |> List.reverse
 
 newFruitCmd : Cmd Msg
-newFruitCmd = Random.generate NewFruitPosition
-        (Random.pair
-            (Random.int -maxCoord maxCoord)
-            (Random.int -maxCoord maxCoord)
-        )
+newFruitCmd = Cmd.batch
+        [ Random.generate NewFruitPosition
+            (Random.pair
+                (Random.int -maxCoord maxCoord)
+                (Random.int -maxCoord maxCoord)
+            )
+        , event "newcherry"
+        ]
 
 checkCollision : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 checkCollision ( model, cmd ) = case model.snake of
         head :: tail -> if List.any (\a -> a == head) tail then
-                ( { model | gameOver = True, paused = True, instructions = Just "Game over\nSpace to start again" }, Cmd.none )
+                ( { model | gameOver = True, paused = True, instructions = Just "Game over\nSpace to start again" }, event "gameover" )
             else
                 ( model, cmd )
 
