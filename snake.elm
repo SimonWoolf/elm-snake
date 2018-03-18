@@ -5,6 +5,10 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Keyboard exposing (KeyCode)
 import Char
+import Time
+import Collage exposing (filled, square)
+import Element
+import Color exposing (black)
 
 
 main = Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
@@ -13,7 +17,7 @@ main = Html.program { init = init, view = view, update = update, subscriptions =
 -- Types & model
 
 
-type alias Model = { snake : List ( Int, Int ), fruit : Maybe ( Int, Int ), lastDirection : InputEnum }
+type alias Model = { snake : List ( Int, Int ), fruit : Maybe ( Int, Int ), lastDirection : InputEnum, lastTick : Maybe Time.Time }
 
 
 type InputEnum
@@ -26,11 +30,11 @@ type InputEnum
 
 type Msg
     = Input InputEnum
-    | Tick
+    | Tick Time.Time
 
 
 init : ( Model, Cmd Msg )
-init = ( Model [] Nothing StartStop, Cmd.none )
+init = ( Model [] Nothing StartStop Nothing, Cmd.none )
 
 
 -- Updates and subscriptions
@@ -40,11 +44,14 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = case msg of
         Input input -> ( { model | lastDirection = input }, Cmd.none )
 
-        Tick -> ( model, Cmd.none )
+        Tick time -> ( { model | lastTick = Just time }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model = Keyboard.downs parseKeyCode
+subscriptions model = Sub.batch
+        [ Keyboard.downs parseKeyCode
+        , Time.every Time.second Tick
+        ]
 
 
 parseKeyCode : KeyCode -> Msg
@@ -85,6 +92,21 @@ parseKeyCode code = -- todo make it a maybe input, so can ignore if not recognis
             ( _, other ) -> Input Up
 
 
+-- Graphics
+
+
+gameSize : Int
+gameSize = 500
+
+
+background : Collage.Form
+background = filled black (square (toFloat gameSize))
+
+
+canvas : model -> Element.Element
+canvas model = Collage.collage gameSize gameSize [ background ]
+
+
 -- View
 
 
@@ -92,4 +114,5 @@ view : Model -> Html Msg
 view model = Html.body []
         [ h2 [] [ text "snake" ]
         , div [] [ text (toString model) ]
+        , div [] [ Element.toHtml (canvas model) ]
         ]
