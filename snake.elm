@@ -38,7 +38,7 @@ yellow = Color.rgb 249 161 30
 
 -- Types & model
 
-type alias Model = { snake : List ( Int, Int ), fruit : Maybe ( Int, Int ), lastDirection : InputEnum, lastTick : Maybe Time.Time }
+type alias Model = { snake : List ( Int, Int ), fruit : Maybe ( Int, Int ), lastDirection : InputEnum, lastTick : Maybe Time.Time, paused : Bool }
 
 type InputEnum
     = Up
@@ -56,6 +56,7 @@ init = ( { snake = [ ( 1, 1 ), ( 2, 2 ), ( 3, 3 ), ( 10, 10 ) ]
       , fruit = Nothing
       , lastDirection = StartStop
       , lastTick = Nothing
+      , paused = True
       }
     , Cmd.none
     )
@@ -65,7 +66,9 @@ init = ( { snake = [ ( 1, 1 ), ( 2, 2 ), ( 3, 3 ), ( 10, 10 ) ]
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = case msg of
-        Input input -> ( { model | lastDirection = input }, Cmd.none )
+        Input StartStop -> ( { model | paused = not model.paused }, Cmd.none )
+
+        Input direction -> ( { model | lastDirection = direction }, Cmd.none )
 
         Tick time -> ( { model | lastTick = Just time }, Cmd.none )
 
@@ -83,6 +86,11 @@ parseKeyCode code = -- todo make it a maybe input, so can ignore if not recognis
         _ = Debug.log "char" (Char.fromCode code)
     in
         case ( code, Char.fromCode code ) of
+            -- control
+            ( _, ' ' ) -> Input StartStop
+
+            ( _, 'P' ) -> Input StartStop
+
             -- Trad gaming directions
             ( _, 'W' ) -> Input Up
 
