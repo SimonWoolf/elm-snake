@@ -93,7 +93,7 @@ update msg model = case msg of
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.batch
         [ Keyboard.downs parseKeyCode
-        , Time.every Time.second Tick
+        , Time.every (500 * Time.millisecond) Tick
         ]
 
 parseKeyCode : KeyCode -> Msg

@@ -12224,11 +12224,11 @@ var _user$project$Main$snake = function (model) {
 };
 var _user$project$Main$cherry = function (model) {
 	return A2(
-		_user$project$Main$setPosition,
-		model.fruit,
+		_evancz$elm_graphics$Collage$move,
+		{ctor: '_Tuple2', _0: -5, _1: 7},
 		A2(
-			_evancz$elm_graphics$Collage$move,
-			{ctor: '_Tuple2', _0: -5, _1: 7},
+			_user$project$Main$setPosition,
+			model.fruit,
 			_evancz$elm_graphics$Collage$toForm(
 				_evancz$elm_graphics$Element$leftAligned(
 					A2(
@@ -12515,7 +12515,7 @@ var _user$project$Main$subscriptions = function (model) {
 			_0: _elm_lang$keyboard$Keyboard$downs(_user$project$Main$parseKeyCode),
 			_1: {
 				ctor: '::',
-				_0: A2(_elm_lang$core$Time$every, _elm_lang$core$Time$second, _user$project$Main$Tick),
+				_0: A2(_elm_lang$core$Time$every, 500 * _elm_lang$core$Time$millisecond, _user$project$Main$Tick),
 				_1: {ctor: '[]'}
 			}
 		});
