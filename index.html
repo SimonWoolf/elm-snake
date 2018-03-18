@@ -11736,22 +11736,76 @@ var _evancz$elm_graphics$Collage$ngon = F2(
 				f,
 				A2(_elm_lang$core$List$range, 0, n - 1)));
 	});
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p0 = msg;
+		if (_p0.ctor === 'Input') {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{lastDirection: _p0._0}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		} else {
+			return {
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						lastTick: _elm_lang$core$Maybe$Just(_p0._0)
+					}),
+				_1: _elm_lang$core$Platform_Cmd$none
+			};
+		}
+	});
+var _user$project$Main$yellow = A3(_elm_lang$core$Color$rgb, 249, 161, 30);
+var _user$project$Main$useableGameSize = 480;
 var _user$project$Main$gameSize = 500;
-var _user$project$Main$background = A2(
-	_evancz$elm_graphics$Collage$filled,
-	_elm_lang$core$Color$black,
-	_evancz$elm_graphics$Collage$square(
-		_elm_lang$core$Basics$toFloat(_user$project$Main$gameSize)));
+var _user$project$Main$background = {
+	ctor: '::',
+	_0: A2(
+		_evancz$elm_graphics$Collage$filled,
+		_elm_lang$core$Color$black,
+		_evancz$elm_graphics$Collage$square(
+			_elm_lang$core$Basics$toFloat(_user$project$Main$gameSize))),
+	_1: {ctor: '[]'}
+};
+var _user$project$Main$boardSize = 21;
+var _user$project$Main$snakePartSize = _elm_lang$core$Basics$toFloat(_user$project$Main$useableGameSize) / _elm_lang$core$Basics$toFloat(_user$project$Main$boardSize);
+var _user$project$Main$snakePartVisibleSize = _user$project$Main$snakePartSize - 2;
+var _user$project$Main$setSnakePartPosition = F2(
+	function (x, y) {
+		return _evancz$elm_graphics$Collage$move(
+			{
+				ctor: '_Tuple2',
+				_0: _elm_lang$core$Basics$toFloat(x) * _user$project$Main$snakePartSize,
+				_1: _elm_lang$core$Basics$toFloat(y) * _user$project$Main$snakePartSize
+			});
+	});
+var _user$project$Main$snakePart = function (_p1) {
+	var _p2 = _p1;
+	return A3(
+		_user$project$Main$setSnakePartPosition,
+		_p2._0,
+		_p2._1,
+		A2(
+			_evancz$elm_graphics$Collage$filled,
+			_user$project$Main$yellow,
+			_evancz$elm_graphics$Collage$square(_user$project$Main$snakePartVisibleSize)));
+};
+var _user$project$Main$snake = function (model) {
+	return A2(_elm_lang$core$List$map, _user$project$Main$snakePart, model.snake);
+};
 var _user$project$Main$canvas = function (model) {
 	return A3(
 		_evancz$elm_graphics$Collage$collage,
 		_user$project$Main$gameSize,
 		_user$project$Main$gameSize,
-		{
-			ctor: '::',
-			_0: _user$project$Main$background,
-			_1: {ctor: '[]'}
-		});
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_user$project$Main$background,
+			_user$project$Main$snake(model)));
 };
 var _user$project$Main$view = function (model) {
 	return A2(
@@ -11794,29 +11848,6 @@ var _user$project$Main$view = function (model) {
 			}
 		});
 };
-var _user$project$Main$update = F2(
-	function (msg, model) {
-		var _p0 = msg;
-		if (_p0.ctor === 'Input') {
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{lastDirection: _p0._0}),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
-		} else {
-			return {
-				ctor: '_Tuple2',
-				_0: _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						lastTick: _elm_lang$core$Maybe$Just(_p0._0)
-					}),
-				_1: _elm_lang$core$Platform_Cmd$none
-			};
-		}
-	});
 var _user$project$Main$Model = F4(
 	function (a, b, c, d) {
 		return {snake: a, fruit: b, lastDirection: c, lastTick: d};
@@ -11824,12 +11855,28 @@ var _user$project$Main$Model = F4(
 var _user$project$Main$StartStop = {ctor: 'StartStop'};
 var _user$project$Main$init = {
 	ctor: '_Tuple2',
-	_0: A4(
-		_user$project$Main$Model,
-		{ctor: '[]'},
-		_elm_lang$core$Maybe$Nothing,
-		_user$project$Main$StartStop,
-		_elm_lang$core$Maybe$Nothing),
+	_0: {
+		snake: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 1, _1: 1},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 2, _1: 2},
+				_1: {
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 3, _1: 3},
+					_1: {
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 10, _1: 10},
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		},
+		fruit: _elm_lang$core$Maybe$Nothing,
+		lastDirection: _user$project$Main$StartStop,
+		lastTick: _elm_lang$core$Maybe$Nothing
+	},
 	_1: _elm_lang$core$Platform_Cmd$none
 };
 var _user$project$Main$Right = {ctor: 'Right'};
@@ -11843,25 +11890,25 @@ var _user$project$Main$Input = function (a) {
 	return {ctor: 'Input', _0: a};
 };
 var _user$project$Main$parseKeyCode = function (code) {
-	var _p1 = A2(
+	var _p3 = A2(
 		_elm_lang$core$Debug$log,
 		'char',
 		_elm_lang$core$Char$fromCode(code));
-	var _p2 = A2(_elm_lang$core$Debug$log, 'code', code);
-	var _p3 = {
+	var _p4 = A2(_elm_lang$core$Debug$log, 'code', code);
+	var _p5 = {
 		ctor: '_Tuple2',
 		_0: code,
 		_1: _elm_lang$core$Char$fromCode(code)
 	};
-	_v1_7:
+	_v2_7:
 	do {
-		_v1_6:
+		_v2_6:
 		do {
-			_v1_5:
+			_v2_5:
 			do {
-				_v1_4:
+				_v2_4:
 				do {
-					switch (_p3._1.valueOf()) {
+					switch (_p5._1.valueOf()) {
 						case 'W':
 							return _user$project$Main$Input(_user$project$Main$Up);
 						case 'A':
@@ -11871,67 +11918,67 @@ var _user$project$Main$parseKeyCode = function (code) {
 						case 'D':
 							return _user$project$Main$Input(_user$project$Main$Right);
 						case 'H':
-							switch (_p3._0) {
+							switch (_p5._0) {
 								case 38:
-									break _v1_4;
+									break _v2_4;
 								case 37:
-									break _v1_5;
+									break _v2_5;
 								case 40:
-									break _v1_6;
+									break _v2_6;
 								case 39:
-									break _v1_7;
+									break _v2_7;
 								default:
 									return _user$project$Main$Input(_user$project$Main$Left);
 							}
 						case 'J':
-							switch (_p3._0) {
+							switch (_p5._0) {
 								case 38:
-									break _v1_4;
+									break _v2_4;
 								case 37:
-									break _v1_5;
+									break _v2_5;
 								case 40:
-									break _v1_6;
+									break _v2_6;
 								case 39:
-									break _v1_7;
+									break _v2_7;
 								default:
 									return _user$project$Main$Input(_user$project$Main$Down);
 							}
 						case 'K':
-							switch (_p3._0) {
+							switch (_p5._0) {
 								case 38:
-									break _v1_4;
+									break _v2_4;
 								case 37:
-									break _v1_5;
+									break _v2_5;
 								case 40:
-									break _v1_6;
+									break _v2_6;
 								case 39:
-									break _v1_7;
+									break _v2_7;
 								default:
 									return _user$project$Main$Input(_user$project$Main$Up);
 							}
 						case 'L':
-							switch (_p3._0) {
+							switch (_p5._0) {
 								case 38:
-									break _v1_4;
+									break _v2_4;
 								case 37:
-									break _v1_5;
+									break _v2_5;
 								case 40:
-									break _v1_6;
+									break _v2_6;
 								case 39:
-									break _v1_7;
+									break _v2_7;
 								default:
 									return _user$project$Main$Input(_user$project$Main$Right);
 							}
 						default:
-							switch (_p3._0) {
+							switch (_p5._0) {
 								case 38:
-									break _v1_4;
+									break _v2_4;
 								case 37:
-									break _v1_5;
+									break _v2_5;
 								case 40:
-									break _v1_6;
+									break _v2_6;
 								case 39:
-									break _v1_7;
+									break _v2_7;
 								default:
 									return _user$project$Main$Input(_user$project$Main$Up);
 							}
