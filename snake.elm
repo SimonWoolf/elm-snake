@@ -68,13 +68,13 @@ type Msg
     | NewFruitPosition Coord
 
 init : ( Model, Cmd Msg )
-init = ( { snake = [ ( 1, 1 ), ( 2, 2 ), ( 3, 3 ), ( 10, 10 ) ]
+init = ( { snake = [ ( 0, 0 ) ]
       , fruit = ( 0, 0 )
       , lastDirection = Right
       , lastTick = Nothing
       , paused = True
       }
-    , Cmd.none
+    , newFruitCmd
     )
 
 

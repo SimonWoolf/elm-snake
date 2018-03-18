@@ -12297,33 +12297,6 @@ var _user$project$Main$Model = F5(
 		return {snake: a, fruit: b, lastDirection: c, lastTick: d, paused: e};
 	});
 var _user$project$Main$Right = {ctor: 'Right'};
-var _user$project$Main$init = {
-	ctor: '_Tuple2',
-	_0: {
-		snake: {
-			ctor: '::',
-			_0: {ctor: '_Tuple2', _0: 1, _1: 1},
-			_1: {
-				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 2, _1: 2},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 3, _1: 3},
-					_1: {
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 10, _1: 10},
-						_1: {ctor: '[]'}
-					}
-				}
-			}
-		},
-		fruit: {ctor: '_Tuple2', _0: 0, _1: 0},
-		lastDirection: _user$project$Main$Right,
-		lastTick: _elm_lang$core$Maybe$Nothing,
-		paused: true
-	},
-	_1: _elm_lang$core$Platform_Cmd$none
-};
 var _user$project$Main$Left = {ctor: 'Left'};
 var _user$project$Main$Down = {ctor: 'Down'};
 var _user$project$Main$Up = {ctor: 'Up'};
@@ -12337,6 +12310,21 @@ var _user$project$Main$newFruitCmd = A2(
 		_elm_lang$core$Random$pair,
 		A2(_elm_lang$core$Random$int, 0 - _user$project$Main$maxCoord, _user$project$Main$maxCoord),
 		A2(_elm_lang$core$Random$int, 0 - _user$project$Main$maxCoord, _user$project$Main$maxCoord)));
+var _user$project$Main$init = {
+	ctor: '_Tuple2',
+	_0: {
+		snake: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 0, _1: 0},
+			_1: {ctor: '[]'}
+		},
+		fruit: {ctor: '_Tuple2', _0: 0, _1: 0},
+		lastDirection: _user$project$Main$Right,
+		lastTick: _elm_lang$core$Maybe$Nothing,
+		paused: true
+	},
+	_1: _user$project$Main$newFruitCmd
+};
 var _user$project$Main$retractTailUnlessFruit = function (model) {
 	return _elm_lang$core$Native_Utils.eq(
 		_elm_lang$core$List$head(model.snake),
