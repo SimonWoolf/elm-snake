@@ -12480,7 +12480,7 @@ var _user$project$Main$update = F2(
 				}
 			case 'Direction':
 				var _p23 = _p21._0;
-				return A2(_user$project$Main$doublingBack, model.snake, _p23) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : _user$project$Main$onTick(
+				return (A2(_user$project$Main$doublingBack, model.snake, _p23) || _elm_lang$core$Native_Utils.eq(_p23, model.lastDirection)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : _user$project$Main$onTick(
 					_elm_lang$core$Native_Utils.update(
 						model,
 						{littleTickCounter: 0, lastDirection: _p23}));

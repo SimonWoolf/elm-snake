@@ -105,7 +105,7 @@ update msg model = case msg of
 
                 ( True, _ ) -> ( { model | paused = False, gameOver = False, snake = [ ( 0, 0 ) ], instructions = Nothing }, newFruitCmd )
 
-        Direction direction -> if (doublingBack model.snake direction) then
+        Direction direction -> if (doublingBack model.snake direction) || direction == model.lastDirection then
                 ( model, Cmd.none )
             else
                 onTick { model | littleTickCounter = 0, lastDirection = direction }
