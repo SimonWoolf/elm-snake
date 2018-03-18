@@ -53,7 +53,7 @@ type alias Coord = ( Int, Int )
 -}
 type alias Snake = List Coord
 
-type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool }
+type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool }
 
 type Direction
     = Up
@@ -73,6 +73,7 @@ init = ( { snake = [ ( 0, 0 ) ]
       , lastDirection = Right
       , lastTick = Nothing
       , paused = True
+      , gameOver = False
       }
     , newFruitCmd
     )
@@ -82,7 +83,10 @@ init = ( { snake = [ ( 0, 0 ) ]
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = case msg of
-        StartStop -> ( { model | paused = not model.paused }, Cmd.none )
+        StartStop -> case model.gameOver of
+                False -> ( { model | paused = not model.paused }, Cmd.none )
+
+                True -> ( { model | paused = False, gameOver = False, snake = [ ( 0, 0 ) ] }, newFruitCmd )
 
         Direction direction -> ( { model | lastDirection = direction }, Cmd.none )
 
@@ -98,45 +102,40 @@ subscriptions model = Sub.batch
 
 parseKeyCode : KeyCode -> Msg
 parseKeyCode code = -- todo make it a maybe input, so can ignore if not recognised
-    let
-        _ = Debug.log "code" code
+    case ( code, Char.fromCode code ) of
+        -- control
+        ( _, ' ' ) -> StartStop
 
-        _ = Debug.log "char" (Char.fromCode code)
-    in
-        case ( code, Char.fromCode code ) of
-            -- control
-            ( _, ' ' ) -> StartStop
+        ( _, 'P' ) -> StartStop
 
-            ( _, 'P' ) -> StartStop
+        -- Trad gaming directions
+        ( _, 'W' ) -> Direction Up
 
-            -- Trad gaming directions
-            ( _, 'W' ) -> Direction Up
+        ( _, 'A' ) -> Direction Left
 
-            ( _, 'A' ) -> Direction Left
+        ( _, 'S' ) -> Direction Down
 
-            ( _, 'S' ) -> Direction Down
+        ( _, 'D' ) -> Direction Right
 
-            ( _, 'D' ) -> Direction Right
+        -- Arrow keys
+        ( 38, _ ) -> Direction Up
 
-            -- Arrow keys
-            ( 38, _ ) -> Direction Up
+        ( 37, _ ) -> Direction Left
 
-            ( 37, _ ) -> Direction Left
+        ( 40, _ ) -> Direction Down
 
-            ( 40, _ ) -> Direction Down
+        ( 39, _ ) -> Direction Right
 
-            ( 39, _ ) -> Direction Right
+        -- Vim
+        ( _, 'H' ) -> Direction Left
 
-            -- Vim
-            ( _, 'H' ) -> Direction Left
+        ( _, 'J' ) -> Direction Down
 
-            ( _, 'J' ) -> Direction Down
+        ( _, 'K' ) -> Direction Up
 
-            ( _, 'K' ) -> Direction Up
+        ( _, 'L' ) -> Direction Right
 
-            ( _, 'L' ) -> Direction Right
-
-            ( _, other ) -> Direction Up
+        ( _, other ) -> Direction Up
 
 onTick : Model -> ( Model, Cmd Msg )
 onTick model = case model.paused of
@@ -148,6 +147,7 @@ advanceSnake : Model -> ( Model, Cmd Msg )
 advanceSnake model = model
         |> extendHead
         |> retractTailUnlessFruit
+        |> checkCollision
 
 extendHead : Model -> Model
 extendHead model = let
@@ -190,6 +190,15 @@ newFruitCmd = Random.generate NewFruitPosition
             (Random.int -maxCoord maxCoord)
             (Random.int -maxCoord maxCoord)
         )
+
+checkCollision : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+checkCollision ( model, cmd ) = case model.snake of
+        head :: tail -> if List.any (\a -> a == head) tail then
+                ( { model | gameOver = True, paused = True }, Cmd.none )
+            else
+                ( model, cmd )
+
+        _ -> ( model, cmd )
 
 
 -- Graphics
