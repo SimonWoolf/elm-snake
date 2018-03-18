@@ -12148,6 +12148,34 @@ var _user$project$Main$dropLast = function (list) {
 			1,
 			_elm_lang$core$List$reverse(list)));
 };
+var _user$project$Main$applyDirection = F2(
+	function (_p5, direction) {
+		var _p6 = _p5;
+		var _p9 = _p6._1;
+		var _p8 = _p6._0;
+		var _p7 = direction;
+		switch (_p7.ctor) {
+			case 'Up':
+				return {ctor: '_Tuple2', _0: _p8, _1: _p9 + 1};
+			case 'Down':
+				return {ctor: '_Tuple2', _0: _p8, _1: _p9 - 1};
+			case 'Left':
+				return {ctor: '_Tuple2', _0: _p8 - 1, _1: _p9};
+			default:
+				return {ctor: '_Tuple2', _0: _p8 + 1, _1: _p9};
+		}
+	});
+var _user$project$Main$doublingBack = F2(
+	function (snake, direction) {
+		var _p10 = snake;
+		if ((_p10.ctor === '::') && (_p10._1.ctor === '::')) {
+			return _elm_lang$core$Native_Utils.eq(
+				A2(_user$project$Main$applyDirection, _p10._0, direction),
+				_p10._1._0);
+		} else {
+			return false;
+		}
+	});
 var _user$project$Main$yellow = A3(_elm_lang$core$Color$rgb, 249, 161, 30);
 var _user$project$Main$useableGameSize = 480;
 var _user$project$Main$gameSize = 500;
@@ -12157,8 +12185,8 @@ var _user$project$Main$background = A2(
 	_evancz$elm_graphics$Collage$square(
 		_elm_lang$core$Basics$toFloat(_user$project$Main$gameSize)));
 var _user$project$Main$instructions = function (model) {
-	var _p5 = model.instructions;
-	if (_p5.ctor === 'Nothing') {
+	var _p11 = model.instructions;
+	if (_p11.ctor === 'Nothing') {
 		return {ctor: '[]'};
 	} else {
 		return {
@@ -12181,7 +12209,7 @@ var _user$project$Main$instructions = function (model) {
 								A2(
 									_evancz$elm_graphics$Text$color,
 									_elm_lang$core$Color$white,
-									_evancz$elm_graphics$Text$fromString(_p5._0))))))),
+									_evancz$elm_graphics$Text$fromString(_p11._0))))))),
 			_1: {ctor: '[]'}
 		};
 	}
@@ -12195,60 +12223,48 @@ var _user$project$Main$bound = function (x) {
 		_user$project$Main$maxCoord,
 		x);
 };
-var _user$project$Main$wrap = function (_p6) {
-	var _p7 = _p6;
-	var _p9 = _p7._1;
-	var _p8 = _p7._0;
+var _user$project$Main$wrap = function (_p12) {
+	var _p13 = _p12;
+	var _p15 = _p13._1;
+	var _p14 = _p13._0;
 	return (_elm_lang$core$Native_Utils.cmp(
-		_elm_lang$core$Basics$abs(_p8),
+		_elm_lang$core$Basics$abs(_p14),
 		_user$project$Main$maxCoord) > 0) ? {
 		ctor: '_Tuple2',
 		_0: _elm_lang$core$Basics$negate(
-			_user$project$Main$bound(_p8)),
-		_1: _p9
+			_user$project$Main$bound(_p14)),
+		_1: _p15
 	} : ((_elm_lang$core$Native_Utils.cmp(
-		_elm_lang$core$Basics$abs(_p9),
+		_elm_lang$core$Basics$abs(_p15),
 		_user$project$Main$maxCoord) > 0) ? {
 		ctor: '_Tuple2',
-		_0: _p8,
+		_0: _p14,
 		_1: _elm_lang$core$Basics$negate(
-			_user$project$Main$bound(_p9))
-	} : {ctor: '_Tuple2', _0: _p8, _1: _p9});
+			_user$project$Main$bound(_p15))
+	} : {ctor: '_Tuple2', _0: _p14, _1: _p15});
 };
 var _user$project$Main$extendHead = function (model) {
 	var newHead = function () {
-		var _p10 = {
+		var _p16 = {
 			ctor: '_Tuple2',
 			_0: _elm_lang$core$List$head(model.snake),
 			_1: model.lastDirection
 		};
-		if (_p10._0.ctor === 'Just') {
-			switch (_p10._1.ctor) {
-				case 'Up':
-					return _elm_lang$core$Maybe$Just(
-						{ctor: '_Tuple2', _0: _p10._0._0._0, _1: _p10._0._0._1 + 1});
-				case 'Down':
-					return _elm_lang$core$Maybe$Just(
-						{ctor: '_Tuple2', _0: _p10._0._0._0, _1: _p10._0._0._1 - 1});
-				case 'Left':
-					return _elm_lang$core$Maybe$Just(
-						{ctor: '_Tuple2', _0: _p10._0._0._0 - 1, _1: _p10._0._0._1});
-				default:
-					return _elm_lang$core$Maybe$Just(
-						{ctor: '_Tuple2', _0: _p10._0._0._0 + 1, _1: _p10._0._0._1});
-			}
+		if (_p16._0.ctor === 'Just') {
+			return _elm_lang$core$Maybe$Just(
+				A2(_user$project$Main$applyDirection, _p16._0._0, _p16._1));
 		} else {
 			return _elm_lang$core$Maybe$Nothing;
 		}
 	}();
-	var _p11 = newHead;
-	if (_p11.ctor === 'Just') {
+	var _p17 = newHead;
+	if (_p17.ctor === 'Just') {
 		return _elm_lang$core$Native_Utils.update(
 			model,
 			{
 				snake: {
 					ctor: '::',
-					_0: _user$project$Main$wrap(_p11._0),
+					_0: _user$project$Main$wrap(_p17._0),
 					_1: model.snake
 				}
 			});
@@ -12258,13 +12274,13 @@ var _user$project$Main$extendHead = function (model) {
 };
 var _user$project$Main$snakePartSize = _elm_lang$core$Basics$toFloat(_user$project$Main$useableGameSize) / _elm_lang$core$Basics$toFloat(_user$project$Main$boardSize);
 var _user$project$Main$snakePartVisibleSize = _user$project$Main$snakePartSize - 2;
-var _user$project$Main$setPosition = function (_p12) {
-	var _p13 = _p12;
+var _user$project$Main$setPosition = function (_p18) {
+	var _p19 = _p18;
 	return _evancz$elm_graphics$Collage$move(
 		{
 			ctor: '_Tuple2',
-			_0: _elm_lang$core$Basics$toFloat(_p13._0) * _user$project$Main$snakePartSize,
-			_1: _elm_lang$core$Basics$toFloat(_p13._1) * _user$project$Main$snakePartSize
+			_0: _elm_lang$core$Basics$toFloat(_p19._0) * _user$project$Main$snakePartSize,
+			_1: _elm_lang$core$Basics$toFloat(_p19._1) * _user$project$Main$snakePartSize
 		});
 };
 var _user$project$Main$snakePart = function (coord) {
@@ -12406,8 +12422,8 @@ var _user$project$Main$advanceSnake = function (model) {
 			_user$project$Main$extendHead(model)));
 };
 var _user$project$Main$onTick = function (model) {
-	var _p14 = model.paused;
-	if (_p14 === true) {
+	var _p20 = model.paused;
+	if (_p20 === true) {
 		return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 	} else {
 		return _user$project$Main$advanceSnake(model);
@@ -12415,12 +12431,12 @@ var _user$project$Main$onTick = function (model) {
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p15 = msg;
-		switch (_p15.ctor) {
+		var _p21 = msg;
+		switch (_p21.ctor) {
 			case 'StartStop':
-				var _p16 = {ctor: '_Tuple2', _0: model.gameOver, _1: model.paused};
-				if (_p16._0 === false) {
-					if (_p16._1 === false) {
+				var _p22 = {ctor: '_Tuple2', _0: model.gameOver, _1: model.paused};
+				if (_p22._0 === false) {
+					if (_p22._1 === false) {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -12459,11 +12475,12 @@ var _user$project$Main$update = F2(
 					};
 				}
 			case 'Direction':
-				return {
+				var _p23 = _p21._0;
+				return A2(_user$project$Main$doublingBack, model.snake, _p23) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{lastDirection: _p15._0}),
+						{lastDirection: _p23}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Tick':
@@ -12473,7 +12490,7 @@ var _user$project$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{fruit: _p15._0}),
+						{fruit: _p21._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
@@ -12486,20 +12503,20 @@ var _user$project$Main$Direction = function (a) {
 	return {ctor: 'Direction', _0: a};
 };
 var _user$project$Main$parseKeyCode = function (code) {
-	var _p17 = {
+	var _p24 = {
 		ctor: '_Tuple2',
 		_0: code,
 		_1: _elm_lang$core$Char$fromCode(code)
 	};
-	_v10_9:
+	_v13_9:
 	do {
-		_v10_8:
+		_v13_8:
 		do {
-			_v10_7:
+			_v13_7:
 			do {
-				_v10_6:
+				_v13_6:
 				do {
-					switch (_p17._1.valueOf()) {
+					switch (_p24._1.valueOf()) {
 						case ' ':
 							return _user$project$Main$StartStop;
 						case 'P':
@@ -12513,67 +12530,67 @@ var _user$project$Main$parseKeyCode = function (code) {
 						case 'D':
 							return _user$project$Main$Direction(_user$project$Main$Right);
 						case 'H':
-							switch (_p17._0) {
+							switch (_p24._0) {
 								case 38:
-									break _v10_6;
+									break _v13_6;
 								case 37:
-									break _v10_7;
+									break _v13_7;
 								case 40:
-									break _v10_8;
+									break _v13_8;
 								case 39:
-									break _v10_9;
+									break _v13_9;
 								default:
 									return _user$project$Main$Direction(_user$project$Main$Left);
 							}
 						case 'J':
-							switch (_p17._0) {
+							switch (_p24._0) {
 								case 38:
-									break _v10_6;
+									break _v13_6;
 								case 37:
-									break _v10_7;
+									break _v13_7;
 								case 40:
-									break _v10_8;
+									break _v13_8;
 								case 39:
-									break _v10_9;
+									break _v13_9;
 								default:
 									return _user$project$Main$Direction(_user$project$Main$Down);
 							}
 						case 'K':
-							switch (_p17._0) {
+							switch (_p24._0) {
 								case 38:
-									break _v10_6;
+									break _v13_6;
 								case 37:
-									break _v10_7;
+									break _v13_7;
 								case 40:
-									break _v10_8;
+									break _v13_8;
 								case 39:
-									break _v10_9;
+									break _v13_9;
 								default:
 									return _user$project$Main$Direction(_user$project$Main$Up);
 							}
 						case 'L':
-							switch (_p17._0) {
+							switch (_p24._0) {
 								case 38:
-									break _v10_6;
+									break _v13_6;
 								case 37:
-									break _v10_7;
+									break _v13_7;
 								case 40:
-									break _v10_8;
+									break _v13_8;
 								case 39:
-									break _v10_9;
+									break _v13_9;
 								default:
 									return _user$project$Main$Direction(_user$project$Main$Right);
 							}
 						default:
-							switch (_p17._0) {
+							switch (_p24._0) {
 								case 38:
-									break _v10_6;
+									break _v13_6;
 								case 37:
-									break _v10_7;
+									break _v13_7;
 								case 40:
-									break _v10_8;
+									break _v13_8;
 								case 39:
-									break _v10_9;
+									break _v13_9;
 								default:
 									return _user$project$Main$Direction(_user$project$Main$Up);
 							}
@@ -12594,7 +12611,7 @@ var _user$project$Main$subscriptions = function (model) {
 			_0: _elm_lang$keyboard$Keyboard$downs(_user$project$Main$parseKeyCode),
 			_1: {
 				ctor: '::',
-				_0: A2(_elm_lang$core$Time$every, 500 * _elm_lang$core$Time$millisecond, _user$project$Main$Tick),
+				_0: A2(_elm_lang$core$Time$every, 250 * _elm_lang$core$Time$millisecond, _user$project$Main$Tick),
 				_1: {ctor: '[]'}
 			}
 		});

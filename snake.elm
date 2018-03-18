@@ -91,7 +91,10 @@ update msg model = case msg of
 
                 ( True, _ ) -> ( { model | paused = False, gameOver = False, snake = [ ( 0, 0 ) ], instructions = Nothing }, newFruitCmd )
 
-        Direction direction -> ( { model | lastDirection = direction }, Cmd.none )
+        Direction direction -> if (doublingBack model.snake direction) then
+                ( model, Cmd.none )
+            else
+                ( { model | lastDirection = direction }, Cmd.none )
 
         Tick time -> onTick model
 
@@ -100,7 +103,7 @@ update msg model = case msg of
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.batch
         [ Keyboard.downs parseKeyCode
-        , Time.every (500 * Time.millisecond) Tick
+        , Time.every (250 * Time.millisecond) Tick
         ]
 
 parseKeyCode : KeyCode -> Msg
@@ -155,13 +158,7 @@ advanceSnake model = model
 extendHead : Model -> Model
 extendHead model = let
         newHead = case ( List.head model.snake, model.lastDirection ) of
-                ( Just ( x, y ), Up ) -> Just ( x, y + 1 )
-
-                ( Just ( x, y ), Down ) -> Just ( x, y - 1 )
-
-                ( Just ( x, y ), Left ) -> Just ( x - 1, y )
-
-                ( Just ( x, y ), Right ) -> Just ( x + 1, y )
+                ( Just coord, direction ) -> Just (applyDirection coord direction)
 
                 ( Nothing, _ ) -> Nothing
     in
@@ -169,6 +166,22 @@ extendHead model = let
             Just coord -> { model | snake = (wrap coord) :: model.snake }
 
             Nothing -> model
+
+doublingBack : Snake -> Direction -> Bool
+doublingBack snake direction = case snake of
+        head :: neck :: rest -> (applyDirection head direction) == neck
+
+        _ -> False
+
+applyDirection : Coord -> Direction -> Coord
+applyDirection ( x, y ) direction = case direction of
+        Up -> ( x, y + 1 )
+
+        Down -> ( x, y - 1 )
+
+        Left -> ( x - 1, y )
+
+        Right -> ( x + 1, y )
 
 wrap : Coord -> Coord
 wrap ( x, y ) = if abs x > maxCoord then
