@@ -14,11 +14,18 @@ main = Html.program { init = init, view = view, update = update, subscriptions =
 
 
 -- constants
--- Coordinate system: origin in the center, increasing up (y) and right (x).
--- Want snake to start in the center at 0,0, so make boardSize an odd number
 
+{-| Coordinate system: origin in the center, increasing up (y) and right (x).
+Want snake to start in the center at 0,0, so make boardSize an odd number
+-}
 boardSize : Int
 boardSize = 21
+
+maxCoord : Int
+maxCoord = (boardSize // 2)
+
+bound : Int -> Int
+bound x = clamp (negate maxCoord) maxCoord x
 
 gameSize : Int
 gameSize = 500
@@ -38,23 +45,29 @@ yellow = Color.rgb 249 161 30
 
 -- Types & model
 
-type alias Model = { snake : List ( Int, Int ), fruit : Maybe ( Int, Int ), lastDirection : InputEnum, lastTick : Maybe Time.Time, paused : Bool }
+type alias Coord = ( Int, Int )
 
-type InputEnum
+{-| The head of the list is the head of the snake
+-}
+type alias Snake = List Coord
+
+type alias Model = { snake : Snake, fruit : Maybe Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool }
+
+type Direction
     = Up
     | Down
     | Left
     | Right
-    | StartStop
 
 type Msg
-    = Input InputEnum
+    = Direction Direction
+    | StartStop
     | Tick Time.Time
 
 init : ( Model, Cmd Msg )
 init = ( { snake = [ ( 1, 1 ), ( 2, 2 ), ( 3, 3 ), ( 10, 10 ) ]
       , fruit = Nothing
-      , lastDirection = StartStop
+      , lastDirection = Right
       , lastTick = Nothing
       , paused = True
       }
@@ -66,11 +79,11 @@ init = ( { snake = [ ( 1, 1 ), ( 2, 2 ), ( 3, 3 ), ( 10, 10 ) ]
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = case msg of
-        Input StartStop -> ( { model | paused = not model.paused }, Cmd.none )
+        StartStop -> ( { model | paused = not model.paused }, Cmd.none )
 
-        Input direction -> ( { model | lastDirection = direction }, Cmd.none )
+        Direction direction -> ( { model | lastDirection = direction }, Cmd.none )
 
-        Tick time -> ( { model | lastTick = Just time }, Cmd.none )
+        Tick time -> ( onTick model, Cmd.none )
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.batch
@@ -87,38 +100,84 @@ parseKeyCode code = -- todo make it a maybe input, so can ignore if not recognis
     in
         case ( code, Char.fromCode code ) of
             -- control
-            ( _, ' ' ) -> Input StartStop
+            ( _, ' ' ) -> StartStop
 
-            ( _, 'P' ) -> Input StartStop
+            ( _, 'P' ) -> StartStop
 
             -- Trad gaming directions
-            ( _, 'W' ) -> Input Up
+            ( _, 'W' ) -> Direction Up
 
-            ( _, 'A' ) -> Input Left
+            ( _, 'A' ) -> Direction Left
 
-            ( _, 'S' ) -> Input Down
+            ( _, 'S' ) -> Direction Down
 
-            ( _, 'D' ) -> Input Right
+            ( _, 'D' ) -> Direction Right
 
             -- Arrow keys
-            ( 38, _ ) -> Input Up
+            ( 38, _ ) -> Direction Up
 
-            ( 37, _ ) -> Input Left
+            ( 37, _ ) -> Direction Left
 
-            ( 40, _ ) -> Input Down
+            ( 40, _ ) -> Direction Down
 
-            ( 39, _ ) -> Input Right
+            ( 39, _ ) -> Direction Right
 
             -- Vim
-            ( _, 'H' ) -> Input Left
+            ( _, 'H' ) -> Direction Left
 
-            ( _, 'J' ) -> Input Down
+            ( _, 'J' ) -> Direction Down
 
-            ( _, 'K' ) -> Input Up
+            ( _, 'K' ) -> Direction Up
 
-            ( _, 'L' ) -> Input Right
+            ( _, 'L' ) -> Direction Right
 
-            ( _, other ) -> Input Up
+            ( _, other ) -> Direction Up
+
+onTick : Model -> Model
+onTick model = case model.paused of
+        True -> model
+
+        False -> advanceSnake model
+
+advanceSnake : Model -> Model
+advanceSnake model = model
+        |> extendHead
+        |> retractTailUnlessFruit
+
+extendHead : Model -> Model
+extendHead model = let
+        newHead = case ( List.head model.snake, model.lastDirection ) of
+                ( Just ( x, y ), Up ) -> Just ( x, y + 1 )
+
+                ( Just ( x, y ), Down ) -> Just ( x, y - 1 )
+
+                ( Just ( x, y ), Left ) -> Just ( x - 1, y )
+
+                ( Just ( x, y ), Right ) -> Just ( x + 1, y )
+
+                ( Nothing, _ ) -> Nothing
+    in
+        case newHead of
+            Just coord -> { model | snake = (wrap coord) :: model.snake }
+
+            Nothing -> model
+
+wrap : Coord -> Coord
+wrap ( x, y ) = if abs x > maxCoord then
+        ( negate (bound x), y )
+    else if abs y > maxCoord then
+        ( x, negate (bound y) )
+    else
+        ( x, y )
+
+retractTailUnlessFruit : Model -> Model
+retractTailUnlessFruit model = if (List.head model.snake) == model.fruit then
+        { model | fruit = Nothing }
+    else
+        { model | snake = (dropLast model.snake) }
+
+dropLast : List a -> List a
+dropLast list = list |> List.reverse |> List.drop 1 |> List.reverse
 
 
 -- Graphics
