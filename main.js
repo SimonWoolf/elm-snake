@@ -17863,7 +17863,7 @@ var _user$project$Main$doublingBack = F2(
 		}
 	});
 var _user$project$Main$littleTickMilliseconds = 10;
-var _user$project$Main$bigTickMilliseconds = 250;
+var _user$project$Main$bigTickMilliseconds = 100;
 var _user$project$Main$littleTicksPerBigTick = (_user$project$Main$bigTickMilliseconds / _user$project$Main$littleTickMilliseconds) | 0;
 var _user$project$Main$yellow = A3(_elm_lang$core$Color$rgb, 249, 161, 30);
 var _user$project$Main$useableGameSize = 480;

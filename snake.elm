@@ -50,7 +50,7 @@ a button is pressed, to feel responsive, but still wait ~bigTickMs before the
 move after that
 -}
 bigTickMilliseconds : Int
-bigTickMilliseconds = 250
+bigTickMilliseconds = 100
 
 littleTickMilliseconds : Int
 littleTickMilliseconds = 10
