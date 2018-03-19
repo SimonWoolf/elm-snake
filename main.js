@@ -17986,17 +17986,14 @@ var _user$project$Main$snake = function (model) {
 };
 var _user$project$Main$cherry = function (model) {
 	return A2(
-		_evancz$elm_graphics$Collage$move,
-		{ctor: '_Tuple2', _0: -5, _1: 7},
-		A2(
-			_user$project$Main$setPosition,
-			model.fruit,
-			_evancz$elm_graphics$Collage$toForm(
-				_evancz$elm_graphics$Element$leftAligned(
-					A2(
-						_evancz$elm_graphics$Text$color,
-						_elm_lang$core$Color$white,
-						_evancz$elm_graphics$Text$fromString('🍒'))))));
+		_user$project$Main$setPosition,
+		model.fruit,
+		_evancz$elm_graphics$Collage$toForm(
+			_evancz$elm_graphics$Element$leftAligned(
+				A2(
+					_evancz$elm_graphics$Text$color,
+					_elm_lang$core$Color$white,
+					_evancz$elm_graphics$Text$fromString('🍒')))));
 };
 var _user$project$Main$canvas = function (model) {
 	return A3(

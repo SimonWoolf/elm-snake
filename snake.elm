@@ -287,8 +287,6 @@ cherry model = Text.fromString "🍒"
         |> Element.leftAligned
         |> Collage.toForm
         |> setPosition model.fruit
-        -- get the emoji to visually sit squarely inside a square
-        |> move ( -5, 7 )
 
 instructions : Model -> List Collage.Form
 instructions model = case model.instructions of
