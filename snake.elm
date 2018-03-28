@@ -67,7 +67,7 @@ type alias Coord = ( Int, Int )
 -}
 type alias Snake = List Coord
 
-type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String, littleTickCounter : Int }
+type alias Model = { snake : Snake, fruit : Coord, inPortal : Coord, outPortal : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String, littleTickCounter : Int }
 
 type Direction
     = Up
@@ -300,6 +300,22 @@ cherry model = Text.fromString "🍒"
         |> Collage.toForm
         |> setPosition model.fruit
 
+inPortal : Color -> Model -> Collage.Form
+inPortal model = Text.fromString "●"
+        |> Text.color Color.orange
+        |> Text.bold
+        |> Element.leftAligned
+        |> Collage.toForm
+        |> setPosition model.inPortal
+
+outPortal : Color -> Model -> Collage.Form
+outPortal model = Text.fromString "●"
+        |> Text.color Color.blue
+        |> Text.bold
+        |> Element.leftAligned
+        |> Collage.toForm
+        |> setPosition model.outPortal
+
 instructions : Model -> List Collage.Form
 instructions model = case model.instructions of
         Nothing -> []
@@ -311,12 +327,10 @@ instructions model = case model.instructions of
                 |> Element.width useableGameSize
                 |> Collage.toForm
                 |> move ( 0, toFloat (gameSize // 4) )
-
-            --|> setPosition ()
             ]
 
 canvas : Model -> Element.Element
-canvas model = Collage.collage gameSize gameSize (background :: (cherry model) :: (snake model) ++ (instructions model))
+canvas model = Collage.collage gameSize gameSize (background :: (cherry model) :: (inPortal model) :: (outPortal model) :: (snake model) ++ (instructions model))
 
 
 -- View
