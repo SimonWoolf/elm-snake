@@ -123,7 +123,19 @@ update msg model = case msg of
             else
                 ( { model | littleTickCounter = model.littleTickCounter + 1 }, Cmd.none )
 
-        NewFruitPosition coord -> ( { model | fruit = coord }, Cmd.none )
+        NewFruitPosition coord -> updateFruitPos coord model
+
+updateFruitPos : Coord -> Model -> ( Model, Cmd msg )
+updateFruitPos coord model = if List.member coord model.snake then
+        updateFruitPos (wrappedIncrement coord) model
+    else
+        ( { model | fruit = coord }, Cmd.none )
+
+wrappedIncrement : Coord -> Coord
+wrappedIncrement ( x, y ) = if x == maxCoord then
+        wrap ( -maxCoord, y + 1 )
+    else
+        ( x + 1, y )
 
 updateRaw : String -> Model -> ( Model, Cmd Msg )
 updateRaw str model = let
