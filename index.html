@@ -10,10 +10,9 @@
   var app = Elm.Main.fullscreen();
   /*
      Send messages as: app.ports.rawInput.send(message)
-     valid messages: "startstop", "up", "down", "left", "right"
+     valid messages: "StartStop", "Up", "Down", "Left", "Right"
    */
-  app.ports.event.subscribe(function(event) {
-    /* possible events are "newcherry" and "gameover" */
+  app.ports.sendEvent.subscribe(function(event) {
     console.log(event)
   });
   </script>

@@ -67,7 +67,17 @@ type alias Coord = ( Int, Int )
 -}
 type alias Snake = List Coord
 
+type alias UserId = String
+
 type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String, littleTickCounter : Int }
+
+type alias Event = { userId : UserId, time : Maybe Time.Time, action : String, coord : Maybe Coord, direction : Maybe String }
+
+type Action
+    = NewUserAction
+    | DirectionAction Direction
+    | DeathAction
+    | NewFruitAction Coord
 
 type Direction
     = Up
@@ -95,12 +105,24 @@ init = ( { snake = [ ( 0, 0 ) ]
     , newFruitCmd
     )
 
+makeAndSendEvent : UserId -> Action -> Maybe Time.Time -> Cmd msg
+makeAndSendEvent userId action time = (case action of
+        NewUserAction -> Event userId time "newUser" Nothing Nothing
+
+        DirectionAction direction -> Event userId time "changeDirection" Nothing (Just (toString direction))
+
+        DeathAction -> Event userId time "death" Nothing Nothing
+
+        NewFruitAction coord -> Event userId time "newFruit" (Just coord) Nothing
+    )
+        |> sendEvent
+
 
 -- Updates and subscriptions
 
 port rawInput : (String -> msg) -> Sub msg
 
-port event : String -> Cmd msg
+port sendEvent : Event -> Cmd msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = case msg of
@@ -114,7 +136,7 @@ update msg model = case msg of
         Direction direction -> if (doublingBack model.snake direction) || direction == model.lastDirection then
                 ( model, Cmd.none )
             else
-                onTick { model | littleTickCounter = 0, lastDirection = direction }
+                onTick { model | littleTickCounter = 0, lastDirection = direction } |> broadcast (DirectionAction direction)
 
         RawDirection string -> updateRaw string model
 
@@ -129,7 +151,10 @@ updateFruitPos : Coord -> Model -> ( Model, Cmd msg )
 updateFruitPos coord model = if List.member coord model.snake then
         updateFruitPos (wrappedIncrement coord) model
     else
-        ( { model | fruit = coord }, Cmd.none )
+        ( { model | fruit = coord }, Cmd.none ) |> broadcast (NewFruitAction coord)
+
+broadcast : Action -> ( Model, Cmd msg ) -> ( Model, Cmd msg )
+broadcast action ( model, cmd ) = ( model, Cmd.batch [ cmd, makeAndSendEvent "foo" action model.lastTick ] )
 
 wrappedIncrement : Coord -> Coord
 wrappedIncrement ( x, y ) = if x == maxCoord then
@@ -140,15 +165,15 @@ wrappedIncrement ( x, y ) = if x == maxCoord then
 updateRaw : String -> Model -> ( Model, Cmd Msg )
 updateRaw str model = let
         maybeMsg = case str of
-                "up" -> Just (Direction Up)
+                "Up" -> Just (Direction Up)
 
-                "down" -> Just (Direction Down)
+                "Down" -> Just (Direction Down)
 
-                "left" -> Just (Direction Left)
+                "Left" -> Just (Direction Left)
 
-                "right" -> Just (Direction Right)
+                "Right" -> Just (Direction Right)
 
-                "startstop" -> Just StartStop
+                "StartStop" -> Just StartStop
 
                 _ -> Nothing
     in
@@ -259,19 +284,16 @@ dropLast : List a -> List a
 dropLast list = list |> List.reverse |> List.drop 1 |> List.reverse
 
 newFruitCmd : Cmd Msg
-newFruitCmd = Cmd.batch
-        [ Random.generate NewFruitPosition
-            (Random.pair
-                (Random.int -maxCoord maxCoord)
-                (Random.int -maxCoord maxCoord)
-            )
-        , event "newcherry"
-        ]
+newFruitCmd = Random.generate NewFruitPosition
+        (Random.pair
+            (Random.int -maxCoord maxCoord)
+            (Random.int -maxCoord maxCoord)
+        )
 
 checkCollision : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 checkCollision ( model, cmd ) = case model.snake of
         head :: tail -> if List.any (\a -> a == head) tail then
-                ( { model | gameOver = True, paused = True, instructions = Just "Game over\nSpace to start again" }, event "gameover" )
+                ( { model | gameOver = True, paused = True, instructions = Just "Game over\nSpace to start again" }, Cmd.none ) |> broadcast DeathAction
             else
                 ( model, cmd )
 
