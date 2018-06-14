@@ -69,7 +69,7 @@ type alias Snake = List Coord
 
 type alias UserId = String
 
-type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String, littleTickCounter : Int }
+type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String, littleTickCounter : Int, userId : UserId }
 
 type alias Event = { userId : UserId, time : Maybe Time.Time, action : String, coord : Maybe Coord, direction : Maybe String }
 
@@ -91,6 +91,7 @@ type Msg
     | StartStop
     | LittleTick Time.Time
     | NewFruitPosition Coord
+    | NewUserId UserId
 
 init : ( Model, Cmd Msg )
 init = ( { snake = [ ( 0, 0 ) ]
@@ -101,8 +102,9 @@ init = ( { snake = [ ( 0, 0 ) ]
       , gameOver = False
       , instructions = Just "Press space to start\nwasd/arrows/hjkl to move"
       , littleTickCounter = 0
+      , userId = ""
       }
-    , newFruitCmd
+    , Cmd.batch [ newFruitCmd, generateUserId ]
     )
 
 makeAndSendEvent : UserId -> Action -> Maybe Time.Time -> Cmd msg
@@ -146,6 +148,8 @@ update msg model = case msg of
                 ( { model | littleTickCounter = model.littleTickCounter + 1 }, Cmd.none )
 
         NewFruitPosition coord -> updateFruitPos coord model
+
+        NewUserId userId -> ( { model | userId = userId }, Cmd.none )
 
 updateFruitPos : Coord -> Model -> ( Model, Cmd msg )
 updateFruitPos coord model = if List.member coord model.snake then
@@ -290,6 +294,13 @@ newFruitCmd = Random.generate NewFruitPosition
             (Random.int -maxCoord maxCoord)
         )
 
+generateUserId : Cmd Msg
+generateUserId = Random.generate (NewUserId << String.fromList)
+        ((Random.int 97 122)
+            |> (Random.map Char.fromCode)
+            |> (Random.list 6)
+        )
+
 checkCollision : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 checkCollision ( model, cmd ) = case model.snake of
         head :: tail -> if List.any (\a -> a == head) tail then
@@ -345,6 +356,6 @@ canvas model = Collage.collage gameSize gameSize (background :: (cherry model) :
 
 view : Model -> Html Msg
 view model = Html.body [ css [ margin (px 50) ] ]
-        [ h1 [] [ text "Snake" ]
+        [ h1 [] [ text model.userId ]
         , div [] [ Element.toHtml (canvas model) |> Html.fromUnstyled ]
         ]

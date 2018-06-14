@@ -9957,7 +9957,7 @@ function block(align)
 }
 
 var htmlHeight =
-	(typeof document !== 'undefined' && document.body)
+	typeof document !== 'undefined'
 		? realHtmlHeight
 		: function(a, b) { return _elm_lang$core$Native_Utils.Tuple2(0, 0); };
 
@@ -18041,7 +18041,7 @@ var _user$project$Main$view = function (model) {
 				{ctor: '[]'},
 				{
 					ctor: '::',
-					_0: _rtfeldman$elm_css$Html_Styled$text('Snake'),
+					_0: _rtfeldman$elm_css$Html_Styled$text(model.userId),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -18072,9 +18072,9 @@ var _user$project$Main$sendEvent = _elm_lang$core$Native_Platform.outgoingPort(
 			direction: (v.direction.ctor === 'Nothing') ? null : v.direction._0
 		};
 	});
-var _user$project$Main$Model = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {snake: a, fruit: b, lastDirection: c, lastTick: d, paused: e, gameOver: f, instructions: g, littleTickCounter: h};
+var _user$project$Main$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {snake: a, fruit: b, lastDirection: c, lastTick: d, paused: e, gameOver: f, instructions: g, littleTickCounter: h, userId: i};
 	});
 var _user$project$Main$Event = F5(
 	function (a, b, c, d, e) {
@@ -18194,6 +18194,19 @@ var _user$project$Main$Right = {ctor: 'Right'};
 var _user$project$Main$Left = {ctor: 'Left'};
 var _user$project$Main$Down = {ctor: 'Down'};
 var _user$project$Main$Up = {ctor: 'Up'};
+var _user$project$Main$NewUserId = function (a) {
+	return {ctor: 'NewUserId', _0: a};
+};
+var _user$project$Main$generateUserId = A2(
+	_elm_lang$core$Random$generate,
+	function (_p28) {
+		return _user$project$Main$NewUserId(
+			_elm_lang$core$String$fromChar(_p28));
+	},
+	A2(
+		_elm_lang$core$Random$map,
+		_elm_lang$core$Char$fromCode,
+		A2(_elm_lang$core$Random$int, 97, 122)));
 var _user$project$Main$NewFruitPosition = function (a) {
 	return {ctor: 'NewFruitPosition', _0: a};
 };
@@ -18218,9 +18231,19 @@ var _user$project$Main$init = {
 		paused: true,
 		gameOver: false,
 		instructions: _elm_lang$core$Maybe$Just('Press space to start\nwasd/arrows/hjkl to move'),
-		littleTickCounter: 0
+		littleTickCounter: 0,
+		userId: ''
 	},
-	_1: _user$project$Main$newFruitCmd
+	_1: _elm_lang$core$Platform_Cmd$batch(
+		{
+			ctor: '::',
+			_0: _user$project$Main$newFruitCmd,
+			_1: {
+				ctor: '::',
+				_0: _user$project$Main$generateUserId,
+				_1: {ctor: '[]'}
+			}
+		})
 };
 var _user$project$Main$retractTailUnlessFruit = function (model) {
 	return _elm_lang$core$Native_Utils.eq(
@@ -18241,8 +18264,8 @@ var _user$project$Main$advanceSnake = function (model) {
 			_user$project$Main$extendHead(model)));
 };
 var _user$project$Main$onTick = function (model) {
-	var _p28 = model.paused;
-	if (_p28 === true) {
+	var _p29 = model.paused;
+	if (_p29 === true) {
 		return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 	} else {
 		return _user$project$Main$advanceSnake(model);
@@ -18261,8 +18284,8 @@ var _user$project$Main$Direction = function (a) {
 var _user$project$Main$updateRaw = F2(
 	function (str, model) {
 		var maybeMsg = function () {
-			var _p29 = str;
-			switch (_p29) {
+			var _p30 = str;
+			switch (_p30) {
 				case 'Up':
 					return _elm_lang$core$Maybe$Just(
 						_user$project$Main$Direction(_user$project$Main$Up));
@@ -18281,21 +18304,21 @@ var _user$project$Main$updateRaw = F2(
 					return _elm_lang$core$Maybe$Nothing;
 			}
 		}();
-		var _p30 = maybeMsg;
-		if (_p30.ctor === 'Just') {
-			return A2(_user$project$Main$update, _p30._0, model);
+		var _p31 = maybeMsg;
+		if (_p31.ctor === 'Just') {
+			return A2(_user$project$Main$update, _p31._0, model);
 		} else {
 			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 		}
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var _p31 = msg;
-		switch (_p31.ctor) {
+		var _p32 = msg;
+		switch (_p32.ctor) {
 			case 'StartStop':
-				var _p32 = {ctor: '_Tuple2', _0: model.gameOver, _1: model.paused};
-				if (_p32._0 === false) {
-					if (_p32._1 === false) {
+				var _p33 = {ctor: '_Tuple2', _0: model.gameOver, _1: model.paused};
+				if (_p33._0 === false) {
+					if (_p33._1 === false) {
 						return {
 							ctor: '_Tuple2',
 							_0: _elm_lang$core$Native_Utils.update(
@@ -18334,16 +18357,16 @@ var _user$project$Main$update = F2(
 					};
 				}
 			case 'Direction':
-				var _p33 = _p31._0;
-				return (A2(_user$project$Main$doublingBack, model.snake, _p33) || _elm_lang$core$Native_Utils.eq(_p33, model.lastDirection)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : A2(
+				var _p34 = _p32._0;
+				return (A2(_user$project$Main$doublingBack, model.snake, _p34) || _elm_lang$core$Native_Utils.eq(_p34, model.lastDirection)) ? {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none} : A2(
 					_user$project$Main$broadcast,
-					_user$project$Main$DirectionAction(_p33),
+					_user$project$Main$DirectionAction(_p34),
 					_user$project$Main$onTick(
 						_elm_lang$core$Native_Utils.update(
 							model,
-							{littleTickCounter: 0, lastDirection: _p33})));
+							{littleTickCounter: 0, lastDirection: _p34})));
 			case 'RawDirection':
-				return A2(_user$project$Main$updateRaw, _p31._0, model);
+				return A2(_user$project$Main$updateRaw, _p32._0, model);
 			case 'LittleTick':
 				return _elm_lang$core$Native_Utils.eq(model.littleTickCounter, _user$project$Main$littleTicksPerBigTick) ? _user$project$Main$onTick(
 					_elm_lang$core$Native_Utils.update(
@@ -18355,12 +18378,20 @@ var _user$project$Main$update = F2(
 						{littleTickCounter: model.littleTickCounter + 1}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
+			case 'NewFruitPosition':
+				return A2(_user$project$Main$updateFruitPos, _p32._0, model);
 			default:
-				return A2(_user$project$Main$updateFruitPos, _p31._0, model);
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{userId: _p32._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 		}
 	});
 var _user$project$Main$parseKeyCode = function (code) {
-	var _p34 = {
+	var _p35 = {
 		ctor: '_Tuple2',
 		_0: code,
 		_1: _elm_lang$core$Char$fromCode(code)
@@ -18373,7 +18404,7 @@ var _user$project$Main$parseKeyCode = function (code) {
 			do {
 				_v20_6:
 				do {
-					switch (_p34._1.valueOf()) {
+					switch (_p35._1.valueOf()) {
 						case ' ':
 							return _user$project$Main$StartStop;
 						case 'P':
@@ -18387,7 +18418,7 @@ var _user$project$Main$parseKeyCode = function (code) {
 						case 'D':
 							return _user$project$Main$Direction(_user$project$Main$Right);
 						case 'H':
-							switch (_p34._0) {
+							switch (_p35._0) {
 								case 38:
 									break _v20_6;
 								case 37:
@@ -18400,7 +18431,7 @@ var _user$project$Main$parseKeyCode = function (code) {
 									return _user$project$Main$Direction(_user$project$Main$Left);
 							}
 						case 'J':
-							switch (_p34._0) {
+							switch (_p35._0) {
 								case 38:
 									break _v20_6;
 								case 37:
@@ -18413,7 +18444,7 @@ var _user$project$Main$parseKeyCode = function (code) {
 									return _user$project$Main$Direction(_user$project$Main$Down);
 							}
 						case 'K':
-							switch (_p34._0) {
+							switch (_p35._0) {
 								case 38:
 									break _v20_6;
 								case 37:
@@ -18426,7 +18457,7 @@ var _user$project$Main$parseKeyCode = function (code) {
 									return _user$project$Main$Direction(_user$project$Main$Up);
 							}
 						case 'L':
-							switch (_p34._0) {
+							switch (_p35._0) {
 								case 38:
 									break _v20_6;
 								case 37:
@@ -18439,7 +18470,7 @@ var _user$project$Main$parseKeyCode = function (code) {
 									return _user$project$Main$Direction(_user$project$Main$Right);
 							}
 						default:
-							switch (_p34._0) {
+							switch (_p35._0) {
 								case 38:
 									break _v20_6;
 								case 37:
