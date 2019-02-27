@@ -304,7 +304,7 @@ generateUserId = Random.generate (NewUserId << String.fromList)
 checkCollision : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 checkCollision ( model, cmd ) = case model.snake of
         head :: tail -> if List.any (\a -> a == head) tail then
-                ( { model | gameOver = True, paused = True, instructions = Just "Game over\nSpace to start again" }, Cmd.none ) |> broadcast DeathAction
+                ( { model | gameOver = True, paused = True, instructions = Just "Game over\nPress space to start again" }, Cmd.none ) |> broadcast DeathAction
             else
                 ( model, cmd )
 
