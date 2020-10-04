@@ -1,17 +1,17 @@
 port module Main exposing (..)
 
-import Html.Styled as Html exposing (Html, Attribute, button, div, text, h1)
+import Char
+import Collage exposing (filled, move, square)
+import Color exposing (black, rgb)
+import Css exposing (margin, px)
+import Element
+import Html.Styled as Html exposing (Attribute, Html, button, div, h1, text)
 import Html.Styled.Attributes exposing (css)
 import Html.Styled.Events exposing (onClick, onInput)
 import Keyboard exposing (KeyCode)
-import Char
-import Time
-import Collage exposing (filled, square, move)
-import Element
-import Text
-import Color exposing (black, rgb)
 import Random
-import Css exposing (margin, px)
+import Text
+import Time
 
 main = Html.program { init = init, view = view, update = update, subscriptions = subscriptions }
 
@@ -25,7 +25,7 @@ boardSize : Int
 boardSize = 21
 
 maxCoord : Int
-maxCoord = (boardSize // 2)
+maxCoord = boardSize // 2
 
 bound : Int -> Int
 bound x = clamp (negate maxCoord) maxCoord x
@@ -37,7 +37,7 @@ useableGameSize : Int
 useableGameSize = 480
 
 snakePartSize : Float
-snakePartSize = (toFloat useableGameSize) / (toFloat boardSize)
+snakePartSize = toFloat useableGameSize / toFloat boardSize
 
 snakePartVisibleSize : Float
 snakePartVisibleSize = snakePartSize - 2
@@ -135,7 +135,7 @@ update msg model = case msg of
 
                 ( True, _ ) -> ( { model | paused = False, gameOver = False, snake = [ ( 0, 0 ) ], instructions = Nothing }, newFruitCmd )
 
-        Direction direction -> if (doublingBack model.snake direction) || direction == model.lastDirection then
+        Direction direction -> if doublingBack model.snake direction || direction == model.lastDirection then
                 ( model, Cmd.none )
             else
                 onTick { model | littleTickCounter = 0, lastDirection = direction } |> broadcast (DirectionAction direction)
@@ -167,7 +167,8 @@ wrappedIncrement ( x, y ) = if x == maxCoord then
         ( x + 1, y )
 
 updateRaw : String -> Model -> ( Model, Cmd Msg )
-updateRaw str model = let
+updateRaw str model =
+    let
         maybeMsg = case str of
                 "Up" -> Just (Direction Up)
 
@@ -181,10 +182,10 @@ updateRaw str model = let
 
                 _ -> Nothing
     in
-        case maybeMsg of
-            Just msg -> update msg model
+    case maybeMsg of
+        Just msg -> update msg model
 
-            Nothing -> ( model, Cmd.none )
+        Nothing -> ( model, Cmd.none )
 
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.batch
@@ -243,20 +244,21 @@ advanceSnake model = model
         |> checkCollision
 
 extendHead : Model -> Model
-extendHead model = let
+extendHead model =
+    let
         newHead = case ( List.head model.snake, model.lastDirection ) of
                 ( Just coord, direction ) -> Just (applyDirection coord direction)
 
                 ( Nothing, _ ) -> Nothing
     in
-        case newHead of
-            Just coord -> { model | snake = (wrap coord) :: model.snake }
+    case newHead of
+        Just coord -> { model | snake = wrap coord :: model.snake }
 
-            Nothing -> model
+        Nothing -> model
 
 doublingBack : Snake -> Direction -> Bool
 doublingBack snake direction = case snake of
-        head :: neck :: rest -> (applyDirection head direction) == neck
+        head :: neck :: rest -> applyDirection head direction == neck
 
         _ -> False
 
@@ -279,10 +281,10 @@ wrap ( x, y ) = if abs x > maxCoord then
         ( x, y )
 
 retractTailUnlessFruit : Model -> ( Model, Cmd Msg )
-retractTailUnlessFruit model = if (List.head model.snake) == Just model.fruit then
+retractTailUnlessFruit model = if List.head model.snake == Just model.fruit then
         ( model, newFruitCmd )
     else
-        ( { model | snake = (dropLast model.snake) }, Cmd.none )
+        ( { model | snake = dropLast model.snake }, Cmd.none )
 
 dropLast : List a -> List a
 dropLast list = list |> List.reverse |> List.drop 1 |> List.reverse
@@ -296,9 +298,9 @@ newFruitCmd = Random.generate NewFruitPosition
 
 generateUserId : Cmd Msg
 generateUserId = Random.generate (NewUserId << String.fromList)
-        ((Random.int 97 122)
-            |> (Random.map Char.fromCode)
-            |> (Random.list 6)
+        (Random.int 97 122
+            |> Random.map Char.fromCode
+            |> Random.list 6
         )
 
 checkCollision : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
@@ -317,7 +319,7 @@ background : Collage.Form
 background = filled black (square (toFloat gameSize))
 
 setPosition : Coord -> Collage.Form -> Collage.Form
-setPosition ( x, y ) = move ( (toFloat x) * snakePartSize, (toFloat y) * snakePartSize )
+setPosition ( x, y ) = move ( toFloat x * snakePartSize, toFloat y * snakePartSize )
 
 snakePart : ( Int, Int ) -> Collage.Form
 snakePart coord = filled yellow (square snakePartVisibleSize)
@@ -349,7 +351,7 @@ instructions model = case model.instructions of
             ]
 
 canvas : Model -> Element.Element
-canvas model = Collage.collage gameSize gameSize (background :: (cherry model) :: (snake model) ++ (instructions model))
+canvas model = Collage.collage gameSize gameSize (background :: cherry model :: snake model ++ instructions model)
 
 
 -- View
