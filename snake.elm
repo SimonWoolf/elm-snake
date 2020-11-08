@@ -69,9 +69,23 @@ type alias Snake = List Coord
 
 type alias UserId = String
 
-type alias Model = { snake : Snake, fruit : Coord, lastDirection : Direction, lastTick : Maybe Time.Time, paused : Bool, gameOver : Bool, instructions : Maybe String, littleTickCounter : Int, userId : UserId }
+type alias Model = { snake : Snake
+    , fruit : Coord
+    , lastDirection : Direction
+    , currentTime : Time.Time
+    , paused : Bool
+    , gameOver : Bool
+    , instructions : Maybe String
+    , progressToBigTick : Int
+    , userId : UserId
+    }
 
-type alias Event = { userId : UserId, time : Maybe Time.Time, action : String, coord : Maybe Coord, direction : Maybe String }
+type alias Event = { userId : UserId
+    , time : Time.Time
+    , action : String
+    , coord : Maybe Coord
+    , direction : Maybe String
+    }
 
 type Action
     = NewUserAction
@@ -97,17 +111,17 @@ init : ( Model, Cmd Msg )
 init = ( { snake = [ ( 0, 0 ) ]
       , fruit = ( 0, 0 )
       , lastDirection = Right
-      , lastTick = Nothing
+      , currentTime = 0
       , paused = True
       , gameOver = False
       , instructions = Just "Press space to start\nwasd/arrows/hjkl to move"
-      , littleTickCounter = 0
+      , progressToBigTick = 0
       , userId = ""
       }
     , Cmd.batch [ newFruitCmd, generateUserId ]
     )
 
-makeAndSendEvent : UserId -> Action -> Maybe Time.Time -> Cmd msg
+makeAndSendEvent : UserId -> Action -> Time.Time -> Cmd msg
 makeAndSendEvent userId action time = (case action of
         NewUserAction -> Event userId time "newUser" Nothing Nothing
 
@@ -138,14 +152,14 @@ update msg model = case msg of
         Direction direction -> if doublingBack model.snake direction || direction == model.lastDirection then
                 ( model, Cmd.none )
             else
-                onTick { model | littleTickCounter = 0, lastDirection = direction } |> broadcast (DirectionAction direction)
+                onTick { model | progressToBigTick = 0, lastDirection = direction } |> broadcast (DirectionAction direction)
 
         RawDirection string -> updateRaw string model
 
-        LittleTick time -> if model.littleTickCounter == littleTicksPerBigTick then
-                onTick { model | littleTickCounter = 0 }
+        LittleTick time -> if model.progressToBigTick == littleTicksPerBigTick then
+                onTick { model | progressToBigTick = 0, currentTime = time }
             else
-                ( { model | littleTickCounter = model.littleTickCounter + 1 }, Cmd.none )
+                ( { model | progressToBigTick = model.progressToBigTick + 1, currentTime = time }, Cmd.none )
 
         NewFruitPosition coord -> updateFruitPos coord model
 
@@ -158,7 +172,7 @@ updateFruitPos coord model = if List.member coord model.snake then
         ( { model | fruit = coord }, Cmd.none ) |> broadcast (NewFruitAction coord)
 
 broadcast : Action -> ( Model, Cmd msg ) -> ( Model, Cmd msg )
-broadcast action ( model, cmd ) = ( model, Cmd.batch [ cmd, makeAndSendEvent "foo" action model.lastTick ] )
+broadcast action ( model, cmd ) = ( model, Cmd.batch [ cmd, makeAndSendEvent "foo" action model.currentTime ] )
 
 wrappedIncrement : Coord -> Coord
 wrappedIncrement ( x, y ) = if x == maxCoord then
@@ -190,7 +204,7 @@ updateRaw str model =
 subscriptions : Model -> Sub Msg
 subscriptions model = Sub.batch
         [ Keyboard.downs parseKeyCode
-        , Time.every (10 * Time.millisecond) LittleTick
+        , Time.every (toFloat littleTickMilliseconds * Time.millisecond) LittleTick
         , rawInput RawDirection
         ]
 

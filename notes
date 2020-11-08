@@ -10,7 +10,13 @@ this way, the move is made with everyone else's snakes in the positions they wer
 
 problem: Time.every doesn't tick for background tabs.
 Solution: use a 'little tick'; every time set number of big ticks since last as floor((now - start)/littleTicksPerBigTick).
-elm - check how Time.every works when background tab in chrome
+when a tab is backgrounded, the callback from Time.every -- which is presumably just setInterval -- is called at most once per second. When foregrounded again there's no catching up, it just resumes being called once per 10ms.
+
+question: should I use the 'time' I broadcast as little ticks expired, or absolute time?
+probably little ticks expired, right?
 
 desirable properties:
 -fair - player should only die if they had an opportunity to anticipate the crash. means crashes calculated by the crasher. 
+
+--
+
