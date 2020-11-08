@@ -3,18 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>Snake</title>
+  <script src="https://cdn.ably.io/lib/ably.min-1.js"></script>
+  <script type="text/javascript" src="main.js"></script>
 </head>
 <body>
-  <script type="text/javascript" src="main.js"></script>
-  <script type="text/javascript">
-  var app = Elm.Main.fullscreen();
-  /*
-     Send messages as: app.ports.rawInput.send(message)
-     valid messages: "StartStop", "Up", "Down", "Left", "Right"
-   */
-  app.ports.sendEvent.subscribe(function(event) {
-    console.log(event)
+<script type="text/javascript">
+  const app = Elm.Main.fullscreen();
+  const realtime = Ably.Realtime({
+    authUrl: "https://realtime-pong.herokuapp.com/auth/multiplayer-snake",
+    log: {level: 4}
   });
-  </script>
+  const channel = realtime.channels.get("snake:game1");
+/*
+   Send messages as: app.ports.rawInput.send(message)
+   valid messages: "StartStop", "Up", "Down", "Left", "Right"
+ */
+  app.ports.sendEvent.subscribe(function(event) {
+    channel.publish(event.action, event);
+  });
+
+  channel.subscribe(function(message) {
+    console.log("Received:", message.data);
+    //app.ports.rawInput.send()
+  });
+</script>
 </body>
 </html>
